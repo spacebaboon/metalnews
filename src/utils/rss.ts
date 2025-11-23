@@ -1,7 +1,23 @@
 import Parser from 'rss-parser';
 import type { Article, FeedConfig } from '../types';
 
-const parser = new Parser();
+/**
+ * Custom fetcher function for rss-parser to use the Workers global fetch API.
+ * * @param url - The URL to fetch (RequestInfo is the standard web type for a URL or Request object).
+ * @param options - The request options (RequestInit is the standard web type).
+ * @returns A promise that resolves to the Response object.
+ */
+const customFetcher = async (
+  url: RequestInfo,
+  options?: RequestInit
+): Promise<Response> => {
+  // Pass the request to the native Workers fetch API
+  return fetch(url, options);
+};
+
+const parser = new Parser({
+  fetch: customFetcher
+} as any);
 
 const CORS_PROXY = 'https://corsproxy.io/?';
 

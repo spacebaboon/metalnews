@@ -9,4 +9,11 @@ export default defineConfig({
     },
   },
   plugins: [react()],
+
+  build: {
+    // Add tailwindcss to the list of external dependencies
+    rollupOptions: {
+      external: ['tailwindcss'],
+    },
+  },
 })
