@@ -1,0 +1,193 @@
+import { useEffect, useState } from 'react';
+import { AlertCircle } from 'lucide-react';
+import type { Article, FeedConfig } from '../types';
+import { loadFeedConfig } from '../utils/yamlLoader';
+import { fetchAllFeeds } from '../utils/rss';
+import { FeedHeader } from './FeedHeader';
+import { FeedSidebar } from './FeedSidebar';
+import { ArticleCard } from './ArticleCard';
+
+export const FeedViewer: React.FC = () => {
+  const [articles, setArticles] = useState<Article[]>([]);
+  const [feeds, setFeeds] = useState<FeedConfig[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedTheme, setSelectedTheme] = useState<string>('All');
+  const [sidebarTab, setSidebarTab] = useState<'sites' | 'authors'>('sites');
+  const [selectedSites, setSelectedSites] = useState<Set<string>>(new Set());
+  const [selectedAuthors, setSelectedAuthors] = useState<Set<string>>(new Set());
+
+  const init = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const loadedFeeds = await loadFeedConfig();
+      setFeeds(loadedFeeds);
+
+      if (loadedFeeds.length === 0) {
+        setError('No feeds found in feeds.yaml');
+        setLoading(false);
+        return;
+      }
+
+      const fetchedArticles = await fetchAllFeeds(loadedFeeds);
+      setArticles(fetchedArticles);
+    } catch (err) {
+      console.error(err);
+      setError('Failed to load feeds');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    init();
+  }, []);
+
+  const toggleSite = (site: string) => {
+    setSelectedSites((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(site)) {
+        newSet.delete(site);
+      } else {
+        newSet.add(site);
+      }
+      return newSet;
+    });
+  };
+
+  const toggleAuthor = (author: string) => {
+    setSelectedAuthors((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(author)) {
+        newSet.delete(author);
+      } else {
+        newSet.add(author);
+      }
+      return newSet;
+    });
+  };
+
+  const handleTabChange = (tab: 'sites' | 'authors') => {
+    setSidebarTab(tab);
+    setSelectedSites(new Set());
+    setSelectedAuthors(new Set());
+  };
+
+  const handleThemeChange = (theme: string) => {
+    setSelectedTheme(theme);
+    setSelectedSites(new Set());
+    setSelectedAuthors(new Set());
+  };
+
+  const themes = ['All', ...new Set(feeds.map((f) => f.theme).filter(Boolean))];
+
+  // Filter articles by theme only (for sidebar stats)
+  const themeFilteredArticles = articles.filter((article) => {
+    if (selectedTheme === 'All') return true;
+    const feed = feeds.find((f) => f.name === article.feedName);
+    return feed?.theme === selectedTheme;
+  });
+
+  // Filter articles by theme + sites + authors (for display)
+  const filteredArticles = themeFilteredArticles.filter((article) => {
+    // Filter by selected sites
+    if (selectedSites.size > 0 && !selectedSites.has(article.feedName)) {
+      return false;
+    }
+
+    // Filter by selected authors
+    if (selectedAuthors.size > 0 && (!article.creator || !selectedAuthors.has(article.creator))) {
+      return false;
+    }
+
+    return true;
+  });
+
+  // Calculate author statistics (from theme-filtered articles only)
+  const authorCounts = themeFilteredArticles.reduce((acc, article) => {
+    if (article.creator) {
+      acc[article.creator] = (acc[article.creator] || 0) + 1;
+    }
+    return acc;
+  }, {} as Record<string, number>);
+
+  const sortedAuthors = Object.entries(authorCounts)
+    .sort(([, a], [, b]) => b - a)
+    .map(([author, count]) => ({ author, count }));
+
+  // Calculate site statistics (from theme-filtered articles only)
+  const siteCounts = themeFilteredArticles.reduce((acc, article) => {
+    acc[article.feedName] = (acc[article.feedName] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const sortedSites = Object.entries(siteCounts)
+    .sort(([, a], [, b]) => b - a)
+    .map(([site, count]) => ({ site, count }));
+
+  return (
+    <div className="min-h-screen bg-gray-200 text-gray-900 font-sans selection:bg-blue-500 selection:text-white">
+      <FeedHeader
+        themes={themes}
+        selectedTheme={selectedTheme}
+        onThemeChange={handleThemeChange}
+        feedsCount={feeds.length}
+        articlesCount={filteredArticles.length}
+        loading={loading}
+        onRefresh={init}
+      />
+
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Main Content */}
+          <div className="flex-1 min-w-0">
+            {error && (
+              <div className="bg-red-50 rounded-2xl p-6 mb-6 flex items-center gap-4 text-red-700">
+                <AlertCircle size={24} />
+                <p className="font-medium">{error}</p>
+              </div>
+            )}
+
+            {loading && articles.length === 0 ? (
+              <div className="space-y-6">
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className="bg-white rounded-2xl p-8 h-64 animate-pulse">
+                    <div className="h-4 bg-gray-200 rounded w-1/4 mb-5"></div>
+                    <div className="h-6 bg-gray-200 rounded w-3/4 mb-5"></div>
+                    <div className="h-4 bg-gray-200 rounded w-full mb-3"></div>
+                    <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {filteredArticles.map((article, index) => (
+                  <ArticleCard key={`${article.link}-${index}`} article={article} />
+                ))}
+              </div>
+            )}
+
+            {!loading && filteredArticles.length === 0 && !error && (
+              <div className="text-center py-32">
+                <p className="text-gray-500 text-lg font-medium">No articles found for this theme.</p>
+              </div>
+            )}
+          </div>
+
+          {/* Sidebar */}
+          <FeedSidebar
+            sidebarTab={sidebarTab}
+            onTabChange={handleTabChange}
+            sortedSites={sortedSites}
+            sortedAuthors={sortedAuthors}
+            selectedSites={selectedSites}
+            selectedAuthors={selectedAuthors}
+            onToggleSite={toggleSite}
+            onToggleAuthor={toggleAuthor}
+          />
+        </div>
+      </main>
+    </div>
+  );
+};
