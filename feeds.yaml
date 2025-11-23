@@ -1,4 +1,5 @@
 feeds:
+  # Board Games
   - url: https://www.dicebreaker.com/feed/reviews
     name: Dicebreaker
     theme: Board Games
@@ -8,6 +9,51 @@ feeds:
   - url: https://boardgamegeek.com/rss/news
     name: BoardGameGeek
     theme: Board Games
+  - url: https://www.boardgamequest.com/feed/
+    name: Board Game Quest
+    theme: Board Games
+  - url: https://www.spacebiff.com/feed/
+    name: Space-Biff!
+    theme: Board Games
+  - url: https://www.meeplelikeus.co.uk/feed/
+    name: Meeple Like Us
+    theme: Board Games
+
+  # Heavy Metal Music
+  - url: https://www.invisibleoranges.com/feed/
+    name: Invisible Oranges
+    theme: Heavy Metal
+  - url: https://www.angrymetalguy.com/feed/
+    name: Angry Metal Guy
+    theme: Heavy Metal
+  - url: https://www.metalinjection.net/feed
+    name: Metal Injection
+    theme: Heavy Metal
+  - url: https://www.metalsucks.net/feed/
+    name: MetalSucks
+    theme: Heavy Metal
+  - url: https://www.loudersound.com/feed
+    name: Metal Hammer
+    theme: Heavy Metal
+
+  # Tabletop RPGs
+  - url: https://www.enworld.org/forums/-/index.rss
+    name: EN World
+    theme: Tabletop RPG
+  - url: https://gnomestew.com/feed/
+    name: Gnome Stew
+    theme: Tabletop RPG
+  - url: https://www.belloflostsouls.net/feed
+    name: Bell of Lost Souls
+    theme: Tabletop RPG
+  - url: https://www.geeknative.com/feed/
+    name: Geek Native
+    theme: Tabletop RPG
+  - url: https://slyflourish.com/rss.xml
+    name: Sly Flourish
+    theme: Tabletop RPG
+
+  # Tech
   - url: https://feeds.feedburner.com/TechCrunch/
     name: TechCrunch
     theme: Tech

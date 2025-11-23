@@ -5,6 +5,14 @@ const parser = new Parser();
 
 const CORS_PROXY = 'https://corsproxy.io/?';
 
+// Decode HTML entities
+const decodeHTMLEntities = (text: string | undefined): string | undefined => {
+    if (!text) return text;
+    const textArea = document.createElement('textarea');
+    textArea.innerHTML = text;
+    return textArea.value;
+};
+
 export const fetchFeed = async (feedConfig: FeedConfig): Promise<Article[]> => {
     try {
         const encodedUrl = encodeURIComponent(feedConfig.url);
@@ -14,12 +22,12 @@ export const fetchFeed = async (feedConfig: FeedConfig): Promise<Article[]> => {
         const feed = await parser.parseString(text);
 
         return feed.items.map((item) => ({
-            title: item.title || 'No Title',
+            title: decodeHTMLEntities(item.title) || 'No Title',
             link: item.link || '#',
             pubDate: item.pubDate || new Date().toISOString(),
             contentSnippet: item.contentSnippet,
             content: item.content,
-            creator: item.creator,
+            creator: decodeHTMLEntities(item.creator),
             isoDate: item.isoDate,
             feedName: feedConfig.name,
         }));
