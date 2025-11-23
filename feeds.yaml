@@ -1,0 +1,13 @@
+feeds:
+  - url: https://www.dicebreaker.com/feed/reviews
+    name: Dicebreaker
+    theme: Board Games
+  - url: https://shutupandsitdown.com/feed/
+    name: Shut Up & Sit Down
+    theme: Board Games
+  - url: https://boardgamegeek.com/rss/news
+    name: BoardGameGeek
+    theme: Board Games
+  - url: https://feeds.feedburner.com/TechCrunch/
+    name: TechCrunch
+    theme: Tech
