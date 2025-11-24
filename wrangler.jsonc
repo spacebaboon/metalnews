@@ -1,7 +1,7 @@
 {
     "name": "worker-name",
     "compatibility_date": "2025-11-24",
-    "main": "src/index.ts",
+    "main": "__experimental__/index.js",
     "assets": {
         "directory": "./dist"
     }
