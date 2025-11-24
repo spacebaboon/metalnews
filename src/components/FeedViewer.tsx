@@ -37,6 +37,7 @@ export const FeedViewer: React.FC<FeedViewerProps> = ({ initialArticles, feeds }
       }
       return newSet;
     });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const toggleAuthor = (author: string) => {
@@ -49,6 +50,7 @@ export const FeedViewer: React.FC<FeedViewerProps> = ({ initialArticles, feeds }
       }
       return newSet;
     });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleTabChange = (tab: 'sites' | 'authors') => {
@@ -61,6 +63,7 @@ export const FeedViewer: React.FC<FeedViewerProps> = ({ initialArticles, feeds }
     setSelectedTheme(theme);
     setSelectedSites(new Set());
     setSelectedAuthors(new Set());
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const themes = ['All', ...new Set(feeds.map((f) => f.theme).filter(Boolean))];
@@ -109,13 +112,18 @@ export const FeedViewer: React.FC<FeedViewerProps> = ({ initialArticles, feeds }
     .sort(([, a], [, b]) => b - a)
     .map(([site, count]) => ({ site, count }));
 
+  // Calculate feeds count for the selected theme
+  const themeFilteredFeedsCount = selectedTheme === 'All'
+    ? feeds.length
+    : feeds.filter(f => f.theme === selectedTheme).length;
+
   return (
     <div className="min-h-screen bg-gray-200 text-gray-900 font-sans selection:bg-blue-500 selection:text-white">
       <FeedHeader
         themes={themes}
         selectedTheme={selectedTheme}
         onThemeChange={handleThemeChange}
-        feedsCount={feeds.length}
+        feedsCount={themeFilteredFeedsCount}
         articlesCount={filteredArticles.length}
         loading={loading}
         onRefresh={refresh}
@@ -162,8 +170,8 @@ export const FeedViewer: React.FC<FeedViewerProps> = ({ initialArticles, feeds }
           <FeedSidebar
             sidebarTab={sidebarTab}
             onTabChange={handleTabChange}
-            sortedSites={sortedSites}
-            sortedAuthors={sortedAuthors}
+            sites={sortedSites}
+            authors={sortedAuthors}
             selectedSites={selectedSites}
             selectedAuthors={selectedAuthors}
             onToggleSite={toggleSite}
